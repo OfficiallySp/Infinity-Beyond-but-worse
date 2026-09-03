@@ -10,9 +10,131 @@ python patch_apk.py --check out.apk
 ```
 
 Nothing here touches the Windows/macOS build. The PC launcher and agent are
-unchanged.
+unchanged. This is explained later in the technical breakdown. Thanks, Claude.
 
 ---
+
+## Building it yourself
+
+### 1. What you need
+
+| Tool | Why | Notes |
+|---|---|---|
+| **Python 3** | runs the patcher | on `PATH`; no packages to install |
+| **A JDK** | `keytool`, to make the signing key | found via `PATH` or `JAVA_HOME`; JDK 26 used here |
+| **Android SDK build-tools** | `aapt2`, `zipalign`, `apksigner` | highest installed version is picked automatically |
+| **Android NDK** (r29 used here) | compiles the shim | only needed when the shim changes — see `--no-build` |
+| **adb** (`<sdk>/platform-tools`) | only for `--install` | optional |
+
+Nothing else. There is **no third-party hooking library** to fetch — see *Why
+the hooker is hand-written* — and the patcher imports only the Python standard
+library.
+
+The SDK is located via `ANDROID_SDK_ROOT`, then `ANDROID_HOME`, then the
+per-OS default (`%LOCALAPPDATA%\Android\Sdk`,
+`~/Library/Android/sdk`, `~/Android/Sdk`). The NDK is located via
+`ANDROID_NDK_ROOT` / `ANDROID_NDK_HOME` / `NDK_ROOT`, else the
+highest-numbered directory under `<sdk>/ndk/`.
+
+### 2. Installing the NDK
+
+With Android Studio, use SDK Manager → SDK Tools → NDK. From the command line,
+if you have `cmdline-tools`:
+
+```
+sdkmanager "ndk;29.0.14206865"
+```
+
+If you do **not** have `cmdline-tools` (a plain Android Studio install often
+does not), download the NDK directly and unzip it into `<sdk>/ndk/`. The
+extracted `android-ndk-r29` works as-is — the patcher picks the
+highest-numbered directory — but renaming it to the version string keeps
+`sdkmanager` consistent if you use it later:
+
+```
+https://dl.google.com/android/repository/android-ndk-r29-windows.zip
+sha1 ab3bb30fbb9e6903666d60c55d11e78b04e07472   (834 MB)
+```
+
+Swap `windows` for `darwin` or `linux` on other hosts. Google's authoritative
+list of NDK URLs, sizes and checksums is
+`https://dl.google.com/android/repository/repository2-3.xml`.
+
+### 3. Get the game APK
+
+Put a stock `aq2d.apk` in `Android APK/` next to this folder. It is **not** in
+the repo — it is ~110 MB and not ours to redistribute, and `.gitignore` excludes
+`*.apk`. The patcher picks the newest `.apk` there that is not already a
+`-beyond.apk`.
+
+### 4. Build and patch
+
+```
+patch.bat                          # Windows
+python patch_apk.py                # any OS - patch.bat just forwards to this
+```
+
+That compiles the shim for every ABI in the APK, repacks, aligns, signs and
+self-checks, leaving `Android APK/aq2d-beyond.apk`. It takes about 8 seconds.
+
+On the first run it creates `beyond.keystore` (password `beyond`). Keep that
+file: it is what lets later builds install over earlier ones without an
+uninstall. It is git-ignored, being a signing key.
+
+Useful flags:
+
+```
+python patch_apk.py path/to/game.apk -o out.apk   # explicit input/output
+python patch_apk.py --no-build                    # reuse shim/out, skip the NDK
+python patch_apk.py --install                     # adb install the result
+python patch_apk.py --check out.apk               # verify an existing APK
+```
+
+### 5. Install
+
+```
+adb uninstall com.Artix.aq2d      # FIRST patched build only - deletes app data
+patch.bat --install
+```
+
+Re-signing changes the APK signature, so the **stock** game has to go before
+the first patched build lands. The patcher prints that command rather than
+running it, because it wipes the app's local data. Later patched builds install
+straight over each other — the key is stable.
+
+After that, always `am force-stop` **before** reinstalling; replacing the APK
+under a live process crashes it inside `libunity.so`.
+
+### 6. The edit / test loop
+
+```
+adb shell am force-stop com.Artix.aq2d
+python patch_apk.py --install
+adb logcat -G 32M                                  # once per boot; see below
+adb logcat -c && adb logcat -s Beyond > log.txt &  # start BEFORE launching
+adb shell am start -n com.Artix.aq2d/com.unity3d.player.UnityPlayerActivity
+```
+
+Start the log capture *before* launching: the game is verbose enough to roll
+the default ring buffer past the shim's startup lines within a minute, which
+looks exactly like the shim never ran. See *Reading the log* for what the
+output means.
+
+### 7. Files
+
+```
+patch_apk.py          the patcher: toolchain discovery, shim build, zip surgery,
+                      align, sign, self-check
+patch.bat             Windows wrapper (named patch.bat, not build_android.bat,
+                      because .gitignore has a broad *build* rule)
+shim/beyond_shim.c    the whole mod: loader, ARM64 hooker, il2cpp glue, menu
+shim/out/<abi>/       compiled shims (git-ignored)
+beyond.keystore       local signing key, created on first run (git-ignored)
+```
+
+---
+
+# Claude's Thesis:
 
 ## What the Android release actually is
 
@@ -258,123 +380,7 @@ call, because neither needed to survive a frame boundary.
 | `AEC has no 0-arg GetResponse` | signature changed this release |
 | game does not boot | shim failed to forward `JNI_OnLoad`; reinstall the stock APK and read logcat unfiltered |
 
-## Building it yourself
-
-### 1. What you need
-
-| Tool | Why | Notes |
-|---|---|---|
-| **Python 3** | runs the patcher | on `PATH`; no packages to install |
-| **A JDK** | `keytool`, to make the signing key | found via `PATH` or `JAVA_HOME`; JDK 26 used here |
-| **Android SDK build-tools** | `aapt2`, `zipalign`, `apksigner` | highest installed version is picked automatically |
-| **Android NDK** (r29 used here) | compiles the shim | only needed when the shim changes — see `--no-build` |
-| **adb** (`<sdk>/platform-tools`) | only for `--install` | optional |
-
-Nothing else. There is **no third-party hooking library** to fetch — see *Why
-the hooker is hand-written* — and the patcher imports only the Python standard
-library.
-
-The SDK is located via `ANDROID_SDK_ROOT`, then `ANDROID_HOME`, then the
-per-OS default (`%LOCALAPPDATA%\Android\Sdk`,
-`~/Library/Android/sdk`, `~/Android/Sdk`). The NDK is located via
-`ANDROID_NDK_ROOT` / `ANDROID_NDK_HOME` / `NDK_ROOT`, else the
-highest-numbered directory under `<sdk>/ndk/`.
-
-### 2. Installing the NDK
-
-With Android Studio, use SDK Manager → SDK Tools → NDK. From the command line,
-if you have `cmdline-tools`:
-
-```
-sdkmanager "ndk;29.0.14206865"
-```
-
-If you do **not** have `cmdline-tools` (a plain Android Studio install often
-does not), download the NDK directly and unzip it into `<sdk>/ndk/`. The
-extracted `android-ndk-r29` works as-is — the patcher picks the
-highest-numbered directory — but renaming it to the version string keeps
-`sdkmanager` consistent if you use it later:
-
-```
-https://dl.google.com/android/repository/android-ndk-r29-windows.zip
-sha1 ab3bb30fbb9e6903666d60c55d11e78b04e07472   (834 MB)
-```
-
-Swap `windows` for `darwin` or `linux` on other hosts. Google's authoritative
-list of NDK URLs, sizes and checksums is
-`https://dl.google.com/android/repository/repository2-3.xml`.
-
-### 3. Get the game APK
-
-Put a stock `aq2d.apk` in `Android APK/` next to this folder. It is **not** in
-the repo — it is ~110 MB and not ours to redistribute, and `.gitignore` excludes
-`*.apk`. The patcher picks the newest `.apk` there that is not already a
-`-beyond.apk`.
-
-### 4. Build and patch
-
-```
-patch.bat                          # Windows
-python patch_apk.py                # any OS - patch.bat just forwards to this
-```
-
-That compiles the shim for every ABI in the APK, repacks, aligns, signs and
-self-checks, leaving `Android APK/aq2d-beyond.apk`. It takes about 8 seconds.
-
-On the first run it creates `beyond.keystore` (password `beyond`). Keep that
-file: it is what lets later builds install over earlier ones without an
-uninstall. It is git-ignored, being a signing key.
-
-Useful flags:
-
-```
-python patch_apk.py path/to/game.apk -o out.apk   # explicit input/output
-python patch_apk.py --no-build                    # reuse shim/out, skip the NDK
-python patch_apk.py --install                     # adb install the result
-python patch_apk.py --check out.apk               # verify an existing APK
-```
-
-### 5. Install
-
-```
-adb uninstall com.Artix.aq2d      # FIRST patched build only - deletes app data
-patch.bat --install
-```
-
-Re-signing changes the APK signature, so the **stock** game has to go before
-the first patched build lands. The patcher prints that command rather than
-running it, because it wipes the app's local data. Later patched builds install
-straight over each other — the key is stable.
-
-After that, always `am force-stop` **before** reinstalling; replacing the APK
-under a live process crashes it inside `libunity.so`.
-
-### 6. The edit / test loop
-
-```
-adb shell am force-stop com.Artix.aq2d
-python patch_apk.py --install
-adb logcat -G 32M                                  # once per boot; see below
-adb logcat -c && adb logcat -s Beyond > log.txt &  # start BEFORE launching
-adb shell am start -n com.Artix.aq2d/com.unity3d.player.UnityPlayerActivity
-```
-
-Start the log capture *before* launching: the game is verbose enough to roll
-the default ring buffer past the shim's startup lines within a minute, which
-looks exactly like the shim never ran. See *Reading the log* for what the
-output means.
-
-### 7. Files
-
-```
-patch_apk.py          the patcher: toolchain discovery, shim build, zip surgery,
-                      align, sign, self-check
-patch.bat             Windows wrapper (named patch.bat, not build_android.bat,
-                      because .gitignore has a broad *build* rule)
-shim/beyond_shim.c    the whole mod: loader, ARM64 hooker, il2cpp glue, menu
-shim/out/<abi>/       compiled shims (git-ignored)
-beyond.keystore       local signing key, created on first run (git-ignored)
-```
+---
 
 ### Adding a feature
 
@@ -463,9 +469,6 @@ would not cover spoofers, autoskills or the overlay.
 
 ## Caveats
 
-- The provided `aq2d.apk` is a single universal APK. Play Store installs are
-  usually split APKs from an AAB; those need merging into a universal APK
-  before this patcher applies.
 - The build embeds GameAnalytics and `libsteam_api.so`. Nothing observed does
   signature or integrity checking, but a future release could.
 - `patch_apk.py --check <apk>` is the self-check and is run automatically after
