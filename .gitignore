@@ -65,3 +65,16 @@ BeyondLauncher*
 
 # Scripts
 /Infinity Scripts
+# ==========================================
+#  Android patcher (aPatcher)
+# ==========================================
+# Game APKs are ~110MB and not ours to redistribute
+*.apk
+*.apk.idsig
+# Local signing key
+/aPatcher/*.keystore
+# Compiled shim output
+/aPatcher/shim/out/
+# The patcher entry point (the broad *build*/*bin* rules above are why this
+# script is called patch.bat and not build_android.bat)
+!/aPatcher/patch.bat
