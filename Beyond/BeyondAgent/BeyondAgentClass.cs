@@ -572,6 +572,15 @@ namespace BeyondAgent
                     if (Input.GetKeyDown(KeyCode.P)) { HudToggles.HideOtherPlayers = !HudToggles.HideOtherPlayers; BeyondLog.Msg($"[Hotkey] HideOtherPlayers={HudToggles.HideOtherPlayers}"); }
                     if (Input.GetKeyDown(KeyCode.M)) { HudToggles.HideMonsters = !HudToggles.HideMonsters; BeyondLog.Msg($"[Hotkey] HideMonsters={HudToggles.HideMonsters}"); }
                     if (Input.GetKeyDown(KeyCode.N)) { HudToggles.HideNPCs = !HudToggles.HideNPCs; BeyondLog.Msg($"[Hotkey] HideNPCs={HudToggles.HideNPCs}"); }
+                    // H expands/collapses the hitbox readout. Only while the
+                    // overlay is up, so the key stays free otherwise; the status
+                    // push keeps the launcher's Debug window in sync.
+                    if (HitboxOverlay.Enabled && Input.GetKeyDown(KeyCode.H))
+                    {
+                        HitboxOverlay.Expanded = !HitboxOverlay.Expanded;
+                        BeyondLog.Msg($"[Hotkey] HitboxReadoutExpanded={HitboxOverlay.Expanded}");
+                        SendStatusUpdate();
+                    }
                 }
             }
             catch (System.Exception ex) { BeyondLog.Error($"HudToggles hotkey: {ex.Message}"); }
@@ -757,6 +766,11 @@ namespace BeyondAgent
 
         public void OnGUI()
         {
+            // Debug hitbox overlay — drawn before the IMGUI menu gate, since the
+            // standalone build never enables that menu (useImgui stays false) but
+            // still needs the overlay. Self-guarded: no-op when toggled off.
+            try { HitboxOverlay.Draw(); } catch (System.Exception ex) { BeyondLog.Error($"HitboxOverlay draw: {ex.Message}"); }
+
             if (!useImgui)
             {
                 return;
@@ -4716,6 +4730,8 @@ namespace BeyondAgent
                 { "hideOtherPlayers", HudToggles.HideOtherPlayers },
                 { "hideMonsters", HudToggles.HideMonsters },
                 { "hideNPCs", HudToggles.HideNPCs },
+                { "hitboxOverlay", HitboxOverlay.Enabled },
+                { "hitboxReadoutExpanded", HitboxOverlay.Expanded },
                 { "skillsetEditCombo", skillsetEditCombo },
                 { "skillsetEditName", skillsetEditName },
                 { "skillsetFileInput", skillsetFileInput },
@@ -5047,6 +5063,8 @@ namespace BeyondAgent
                             case "hideOtherPlayers": HudToggles.HideOtherPlayers = (bool)val; break;
                             case "hideMonsters": HudToggles.HideMonsters = (bool)val; break;
                             case "hideNPCs": HudToggles.HideNPCs = (bool)val; break;
+                            case "hitboxOverlay": HitboxOverlay.Enabled = (bool)val; break;
+                            case "hitboxReadoutExpanded": HitboxOverlay.Expanded = (bool)val; break;
                         }
 
                         SendStatusUpdate();

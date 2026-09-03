@@ -380,6 +380,16 @@ namespace Launcher.ViewModels
                     HideNPCs = (bool)val;
                 }
 
+                if (settings.TryGetValue("hitboxOverlay", out val))
+                {
+                    HitboxOverlayActive = (bool)val;
+                }
+
+                if (settings.TryGetValue("hitboxReadoutExpanded", out val))
+                {
+                    HitboxReadoutExpanded = (bool)val;
+                }
+
                 if (settings.TryGetValue("playerAccessLevel", out val))
                 {
                     PlayerAccessLevel = (int)val;
@@ -716,6 +726,12 @@ namespace Launcher.ViewModels
         private void OpenLibraryWindow()
         {
             ShowToolWindow<LibraryWindow>();
+        }
+
+        [RelayCommand]
+        private void OpenDebugWindow()
+        {
+            ShowToolWindow<DebugWindow>();
         }
     }
 }

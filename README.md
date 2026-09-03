@@ -60,6 +60,10 @@ back to the launcher so every tool window reflects live game state.
 - **Tool windows** - Visual Spoofers &amp; Jukebox, Autoskills, Quest Loader, Quest
   Runner &amp; Chain Editor, Shop Loader, Fake Dev, Packet Sniffer / Interceptor /
   Sender / Receiver.
+- **Debug** - toggles a visual hitbox overlay in-game: the player's feet anchor,
+  the collider that actually stops it, every Blocker collider on screen (faint
+  when it can't block), and the secondary un-stick probes with their contact
+  points.
 
 ---
 
