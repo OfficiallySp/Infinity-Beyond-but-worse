@@ -1,4 +1,4 @@
-# aPatcher — Beyond for Android
+# aPatcher - Beyond for Android
 
 Patches the AQW Infinity Android APK so it loads Beyond, without hard-coding
 anything that changes between game releases.
@@ -23,11 +23,11 @@ unchanged. This is explained later in the technical breakdown. Thanks, Claude.
 | **Python 3** | runs the patcher | on `PATH`; no packages to install |
 | **A JDK** | `keytool`, to make the signing key | found via `PATH` or `JAVA_HOME`; JDK 26 used here |
 | **Android SDK build-tools** | `aapt2`, `zipalign`, `apksigner` | highest installed version is picked automatically |
-| **Android NDK** (r29 used here) | compiles the shim | only needed when the shim changes — see `--no-build` |
+| **Android NDK** (r29 used here) | compiles the shim | only needed when the shim changes - see `--no-build` |
 | **adb** (`<sdk>/platform-tools`) | only for `--install` | optional |
 
-Nothing else. There is **no third-party hooking library** to fetch — see *Why
-the hooker is hand-written* — and the patcher imports only the Python standard
+Nothing else. There is **no third-party hooking library** to fetch - see *Why
+the hooker is hand-written* - and the patcher imports only the Python standard
 library.
 
 The SDK is located via `ANDROID_SDK_ROOT`, then `ANDROID_HOME`, then the
@@ -47,8 +47,8 @@ sdkmanager "ndk;29.0.14206865"
 
 If you do **not** have `cmdline-tools` (a plain Android Studio install often
 does not), download the NDK directly and unzip it into `<sdk>/ndk/`. The
-extracted `android-ndk-r29` works as-is — the patcher picks the
-highest-numbered directory — but renaming it to the version string keeps
+extracted `android-ndk-r29` works as-is - the patcher picks the
+highest-numbered directory - but renaming it to the version string keeps
 `sdkmanager` consistent if you use it later:
 
 ```
@@ -63,7 +63,7 @@ list of NDK URLs, sizes and checksums is
 ### 3. Get the game APK
 
 Put a stock `aq2d.apk` in `Android APK/` next to this folder. It is **not** in
-the repo — it is ~110 MB and not ours to redistribute, and `.gitignore` excludes
+the repo - it is ~110 MB and not ours to redistribute, and `.gitignore` excludes
 `*.apk`. The patcher picks the newest `.apk` there that is not already a
 `-beyond.apk`.
 
@@ -100,7 +100,7 @@ patch.bat --install
 Re-signing changes the APK signature, so the **stock** game has to go before
 the first patched build lands. The patcher prints that command rather than
 running it, because it wipes the app's local data. Later patched builds install
-straight over each other — the key is stable.
+straight over each other - the key is stable.
 
 After that, always `am force-stop` **before** reinstalling; replacing the APK
 under a live process crashes it inside `libunity.so`.
@@ -130,6 +130,7 @@ patch.bat             Windows wrapper (named patch.bat, not build_android.bat,
 shim/beyond_shim.c    the whole mod: loader, ARM64 hooker, il2cpp glue, menu
 shim/out/<abi>/       compiled shims (git-ignored)
 beyond.keystore       local signing key, created on first run (git-ignored)
+ANTICHEAT.md          what anticheat is (and is not) in the stock APK, measured
 ```
 
 ---
@@ -145,11 +146,11 @@ Measured from `Android APK/aq2d.apk` (version 0.0.254, versionCode 9):
 | Package | `com.Artix.aq2d` |
 | Launcher activity | `com.unity3d.player.UnityPlayerActivity` (stock, no subclass) |
 | Unity | **6000.3.17f1** (Unity 6.3) |
-| Scripting backend | **IL2CPP** — `libil2cpp.so`, `global-metadata.dat` |
+| Scripting backend | **IL2CPP** - `libil2cpp.so`, `global-metadata.dat` |
 | IL2CPP metadata | **version 39**, unencrypted (sanity `0xFAB11BAF`) |
 | ABIs | `arm64-v8a`, `armeabi-v7a` |
 | minSdk / targetSdk | 25 / 36 |
-| `extractNativeLibs` | `true` — native libs land on disk, so `dlopen` by name works |
+| `extractNativeLibs` | `true` - native libs land on disk, so `dlopen` by name works |
 | `<application android:name>` | absent |
 
 The one fact the patcher is built on: **`libmain.so` exports exactly one
@@ -159,7 +160,7 @@ symbol, `JNI_OnLoad`**, and Unity's Java side reaches it through a plain
 ## Why the desktop agent does not just port
 
 `Beyond/BeyondAgent` is ~14.6k lines of C# that Harmony-patches a **Mono**
-`Assembly-CSharp.dll`. On Android there is no `Assembly-CSharp.dll` — IL2CPP
+`Assembly-CSharp.dll`. On Android there is no `Assembly-CSharp.dll` - IL2CPP
 has already compiled that C# to native ARM inside `libil2cpp.so`. Harmony has
 nothing to patch.
 
@@ -189,10 +190,10 @@ boots exactly as before. On the background thread:
 
 1. Wait for `libil2cpp.so` to be **mapped** (`dlopen` with `RTLD_NOLOAD`, which
    never calls into it).
-2. Hook `il2cpp_init` and wait for it to return. That is the readiness signal —
+2. Hook `il2cpp_init` and wait for it to return. That is the readiness signal -
    see *Two traps* below for why the obvious alternative crashes.
-3. Resolve `AEC.GetResponse` — the same method the desktop agent patches in
-   `Patches/AECPatch.cs` — and hook it, logging the class name and
+3. Resolve `AEC.GetResponse` - the same method the desktop agent patches in
+   `Patches/AECPatch.cs` - and hook it, logging the class name and
    `GetCommand()` of every packet the client receives:
 
 ```
@@ -213,7 +214,7 @@ signature must verify.
 
 **`il2cpp_domain_get()` is not safe to call before `il2cpp_init` has run.** It
 dereferences runtime state that does not exist yet. Polling it as an "is the
-runtime up?" signal segfaults the game on a cold start — `SIGSEGV` reading
+runtime up?" signal segfaults the game on a cold start - `SIGSEGV` reading
 `0x135`, inside `il2cpp_domain_get` itself. Hook `il2cpp_init` and use its
 return instead.
 
@@ -225,12 +226,12 @@ about **2.8 GB** apart, far outside a branch's ±128 MB. The shim therefore
 The island is also what keeps the patch to a **single 4-byte store**, so only
 one instruction is displaced and a thread mid-call sees either the old
 instruction or the branch, never a mixture. A 16-byte absolute jump would
-displace four — and IL2CPP prologues routinely carry an `ADRP` within the first
+displace four - and IL2CPP prologues routinely carry an `ADRP` within the first
 four. `AEC.GetResponse` does exactly that, at word 3.
 
 ### Why the hooker is hand-written
 
-ShadowHook 2.0.1 — the obvious dependency — **cannot initialise on Android 17**:
+ShadowHook 2.0.1 - the obvious dependency - **cannot initialise on Android 17**:
 `shadowhook_init` returns `SHADOWHOOK_ERRNO_INIT_LINKER` (12) because it parses
 dynamic-linker internals that moved, and 2.0.1 is the newest release. Dobby's
 latest release ships iOS/macOS prebuilts only. So `shim/beyond_shim.c` carries
@@ -247,7 +248,7 @@ the hand-rolled hooker is a small and welcome diff.
 Against 0.0.254: all 1272 entries copied through byte-identical, the manifest
 reads unchanged, re-patching an already-patched APK is idempotent, and the run
 takes ~8s. The built shim is ELF64/AArch64 and ELF32/ARM, each exporting only
-`JNI_OnLoad` — the same export surface as the `libmain.so` it replaces.
+`JNI_OnLoad` - the same export surface as the `libmain.so` it replaces.
 
 On device (Pixel 11 Pro, Android 17, arm64-v8a) the game boots, both hooks
 install, and no process crashes:
@@ -263,9 +264,9 @@ Beyond: Beyond loader ready
 ```
 
 That is the proof that name-based il2cpp resolution and inline hooking both
-work on Unity 6.3 / metadata v39 — no dumper, no offsets.
+work on Unity 6.3 / metadata v39 - no dumper, no offsets.
 
-Packets, from a logged-in session — same `Type (command)` shape as the desktop
+Packets, from a logged-in session - same `Type (command)` shape as the desktop
 sniffer:
 
 ```
@@ -294,12 +295,12 @@ past these lines within a minute. Use `adb logcat -G 32M`, or stream
 
 Reinstall note: `am force-stop` **before** `adb install -r`, not after.
 Replacing the APK under a live process crashes it inside `libunity.so` via
-`bitter.jnibridge` — that failure looks alarming in logcat and has nothing to do
+`bitter.jnibridge` - that failure looks alarming in logcat and has nothing to do
 with the shim.
 
 ### How the on-device menu draws
 
-`unity.strip-engine-code=true` did **not** remove IMGUI — `GUILayout` and `GUI`
+`unity.strip-engine-code=true` did **not** remove IMGUI - `GUILayout` and `GUI`
 resolve at runtime. But GUI calls are only legal inside an `OnGUI`, and the
 game's own code declares none. The probe found two shipped library types that
 do:
@@ -312,7 +313,7 @@ imgui probe: scanned 14551 classes in 103 assemblies, 2 OnGUI method(s)
 
 So the menu borrows one. `setup_menu` creates a `GameObject`, keeps it with
 `DontDestroyOnLoad`, attaches `PostProcessDebug` via the `AddComponent(Type)`
-overload, and hooks that type's `OnGUI` — which puts our draw code inside a
+overload, and hooks that type's `OnGUI` - which puts our draw code inside a
 valid GUI context. The original `OnGUI` is deliberately **not** called: we
 created the only instance, nothing else in the game uses the type, and its own
 code would run against fields we never set.
@@ -320,7 +321,7 @@ code would run against fields we never set.
 **Unity refuses `GameObject` creation off the main thread**, so this cannot run
 on the loader's background thread. It runs from a hook on `AEC.Update`, a
 MonoBehaviour tick that is main-thread by definition. That hook is also where
-anything needing a per-frame timer belongs — autoskills, for one.
+anything needing a per-frame timer belongs - autoskills, for one.
 
 Overloads need care: `il2cpp_class_get_method_from_name` returns the first
 name+argc match, which for `GUI.Box` is the `(Rect, Texture)` sibling. The
@@ -335,12 +336,12 @@ than assumed (`probe_api` logs full signatures):
 |---|---|
 | `GUI.Box(Rect, string)` | survives |
 | `GUI.Label(Rect, string)` | survives |
-| `GUI.Button(Rect, string)` | **gone** — only `(Rect, GUIContent, GUIStyle)` |
+| `GUI.Button(Rect, string)` | **gone** - only `(Rect, GUIContent, GUIStyle)` |
 | `GUI.TextField` | **gone entirely**, from `GUI` *and* `GUILayout` |
 | `GUILayout` | only 9 methods: `Button/2`, `Label/2`, `Width`, `Height`, scroll views |
 
 So buttons wrap their text in a `GUIContent` and borrow `GUI.skin.button`, and
-text input comes from `TouchScreenKeyboard` — the OS keyboard, which is the
+text input comes from `TouchScreenKeyboard` - the OS keyboard, which is the
 right control on a phone anyway. `GUI.matrix` scales the whole UI including
 fonts (`Screen.dpi / 160`, clamped 1–4; 2.62 on the test device), which sizing
 rects alone would not do.
@@ -359,7 +360,7 @@ dispatches correctly on the derived instance.
 `il2cpp_gchandle_new` is declared `uint32_t` in the classic il2cpp headers. On
 this runtime it returns a **pointer**. Storing it in a `uint32_t` truncates it,
 and `il2cpp_gchandle_get_target` then dereferences the truncated value and
-segfaults — the fault address is the truncated handle, which is what gives it
+segfaults - the fault address is the truncated handle, which is what gives it
 away. Declare handles as `void *`.
 
 The shim keeps exactly one GC handle now (the live `TouchScreenKeyboard`);
@@ -389,18 +390,18 @@ class and method in the decompiled desktop `Assembly-CSharp.dll` (`ilspycmd`
 against your PC install), resolve it in `setup_menu` with `find_method`, and
 either call it through `inv()` or hook it with `hook_func`. `probe_api` is
 there to dump real signatures from the device when the desktop build and the
-Android build disagree — which they do, because `strip-engine-code` removes
+Android build disagree - which they do, because `strip-engine-code` removes
 whatever the game never calls.
 
 ## What is left to build
 
 In dependency order:
 
-1. ~~A hook engine in the shim.~~ Done — a hand-rolled ARM64 inline hook on the
+1. ~~A hook engine in the shim.~~ Done - a hand-rolled ARM64 inline hook on the
    code pointer from `MethodInfo`, validated with `dladdr` before use.
-2. ~~A way to draw on device.~~ Done — see *How the on-device menu draws*.
+2. ~~A way to draw on device.~~ Done - see *How the on-device menu draws*.
 3. ~~The packet tools.~~ Done. Tools panel: **Block** (wired to the
-   `GetResponse` hook — blocking is `return NULL`), **Clear**, **Type** (opens
+   `GetResponse` hook - blocking is `return NULL`), **Clear**, **Type** (opens
    the OS keyboard), **Send** (builds `Request(cmd)` and calls
    `AEC.sendRequest`, the desktop Packet Sender's path), **Log** and **Help**,
    each a separate window so the panel stays readable. `AEC.sendRequest` is
@@ -414,7 +415,7 @@ In dependency order:
    - **Autoskills** cycles slots 0-4 on the `AEC.Update` tick via
      `UISkillSlots.GetSlot(i)` then `SkillSlotButton.UseSkill(true)`/`(false)`.
      `UISkillSlots` derives from `Singleton<T>`, whose static `Instance` sits on
-     an inflated generic type that is awkward to reach from native — so the
+     an inflated generic type that is awkward to reach from native - so the
      instance is captured by hooking `UISkillSlots.Register` instead.
    - **Name/title spoof** writes into `Player.nameTagView` (a `NameplateView`)
      via `SetName`/`SetTitle`/`SetTitleVisible`, re-asserted once a second
@@ -427,16 +428,16 @@ In dependency order:
 
    *Verified on device:* every hook installs, the menu renders and paginates,
    no crashes. *Not verified:* Send delivering a live command, autoskills
-   actually casting, and the spoof rendering — all three need a logged-in
+   actually casting, and the spoof rendering - all three need a logged-in
    session in combat.
 5. **The rest of the tools.** `AEC`'s surface maps almost one-to-one onto
    Beyond's desktop tools:
 
    | `AEC` method | Beyond feature |
    |---|---|
-   | `sendRequest/1`, `sendMessage/1` | Packet Sender — no hook, just `runtime_invoke` |
+   | `sendRequest/1`, `sendMessage/1` | Packet Sender - no hook, just `runtime_invoke` |
    | `queueResponse/1`, `WrapAndQueueResponse/1` | Packet injection / fake responses |
-   | `GetResponse/0` *(already hooked)* | Interceptor — returning null **is** blocking |
+   | `GetResponse/0` *(already hooked)* | Interceptor - returning null **is** blocking |
    | `add_RawRequestSent`, `add_RawResponseReceived` | Outgoing traffic, already evented |
    | `EncryptDecrypt/1`, `Serialize/Deserialize/1` | Raw wire access |
    | `connect/3`, `close/0`, `Disconnect/0`, `get_HasSocket/0` | Connection control |
@@ -444,10 +445,10 @@ In dependency order:
    Next up, with the call paths already read off the desktop agent and the
    decompiled `Assembly-CSharp`:
 
-   - **Autoskills** — `UISkillSlots.Instance.GetSlot(i)` then
+   - **Autoskills** - `UISkillSlots.Instance.GetSlot(i)` then
      `SkillSlotButton.UseSkill(true)`/`(false)`, driven off the `AEC.Update`
      tick that already exists.
-   - **Name/title spoof** — hook `Player.ComposeNameplateText()` (private,
+   - **Name/title spoof** - hook `Player.ComposeNameplateText()` (private,
      0-arg, returns string) and return the spoofed text, then call
      `RefreshNameplate()`. The desktop agent does exactly this.
 
@@ -458,8 +459,8 @@ In dependency order:
    re-checking before investing heavily in native ports.
 
 There is no launcher process on Android and no named pipes, so the Avalonia
-tool windows do not apply. `BeyondAgentClass.OnGUI` — the desktop agent's
-existing IMGUI menu, gated behind its `useImgui` flag — is the layout to copy,
+tool windows do not apply. `BeyondAgentClass.OnGUI` - the desktop agent's
+existing IMGUI menu, gated behind its `useImgui` flag - is the layout to copy,
 but it is C# and cannot run, so it is a model to reimplement rather than code
 to port.
 
@@ -469,7 +470,14 @@ would not cover spoofers, autoskills or the overlay.
 
 ## Caveats
 
-- The build embeds GameAnalytics and `libsteam_api.so`. Nothing observed does
-  signature or integrity checking, but a future release could.
+- The APK ships **no anticheat**: no anti-tamper, no root enforcement, no
+  debugger detection. That was measured, not assumed - see
+  [ANTICHEAT.md](ANTICHEAT.md) for the evidence and the repro commands.
+- The build bundles GameAnalytics, whose stock telemetry annotates its events
+  with device and build metadata of its own accord. Not gameplay data, not
+  Artix's code, and nothing in the game reads it back - but it is the one thing
+  in the APK that describes your setup, so read
+  [ANTICHEAT.md](ANTICHEAT.md) §2 once.
+- `libsteam_api.so` is present and unused on Android.
 - `patch_apk.py --check <apk>` is the self-check and is run automatically after
   every patch. It fails on an unpatched APK, which is how you know it has teeth.
