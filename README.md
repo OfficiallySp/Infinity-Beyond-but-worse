@@ -1,5 +1,9 @@
 # Beyond - Standalone Client
 
+this fork is to not be taken seriously.
+<img width="1065" height="476" alt="Screenshot 2026-09-05 at 6 30 58 am" src="https://github.com/user-attachments/assets/e53c7f46-58f8-489b-b742-9604b6655e2e" />
+
+# Original readme follows
 A custom launcher and in-game mod for **AdventureQuest Worlds Infinity**. The
 launcher embeds the Unity game inside its own window, runs multiple accounts side
 by side, and exposes a set of tools (cosmetic spoofers, autoskills, packet
