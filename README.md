@@ -46,11 +46,14 @@ it does not work. that took effort. 😤
 
 ```bash
 cd BeyondBeyond
-./run.sh                # the intended experience. slow, so you can read it 🐌
-./run.sh --normal       # 1.0x — the good bits go past too fast
-./run.sh --speed 3      # n = multiplier. 3 is a hostage situation.
+./run.sh --step         # RECOMMENDED 🪜 pauses at every act + every cheat
+./run.sh                # straight through, slow (2.0x), ~8 min
+./run.sh --speed 4      # n = multiplier. 4 is a hostage situation.
 ./run.sh --fast         # no delays at all, for cowards
 ```
+
+it is about **18,000 words**. thats an hour of real reading. `--step` is not a
+gimmick, it is the only way anyone has finished it 📖
 
 ## 🎬 the show
 

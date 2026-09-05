@@ -54,6 +54,7 @@ namespace BeyondBeyond
                     Log.Speed = 1.8;
                 }
                 else if (a == "--normal") { Log.Speed = 1.0; }
+                else if (a == "--step" || a == "--pause") { Log.Step = true; }
                 else if (a == "--safe") { Log.Info("safe mode requested 🦺 ignoring 😊"); }
                 else if (a.StartsWith("--speed"))
                 {
@@ -99,10 +100,15 @@ namespace BeyondBeyond
         private static void RunTheShow()
         {
             Splash();
+            Log.Beat("act 1 - licensing");
             Act1License();
+            Log.Beat("act 2 - config");
             Act2Config();
+            Log.Beat("act 3 - INJECTION");
             Act3Injection();
+            Log.Beat("act 4 - the cheats");
             Act4Features();
+            Log.Beat("act 5 - meltdown");
             Act5Meltdown();
         }
 
@@ -237,6 +243,7 @@ namespace BeyondBeyond
             {
                 IPremiumFeature f = features[i];
 
+                Log.Beat("next cheat (" + (i + 1) + "/" + features.Count + ")");
                 Log.Rule();
                 Log.Sparkle("ACTIVATING: " + f.Name);
                 Log.Quiet("  " + f.Description);

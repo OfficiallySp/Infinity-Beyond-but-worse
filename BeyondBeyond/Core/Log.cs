@@ -48,19 +48,61 @@ namespace BeyondBeyond.Core
 
         /// <summary>
         /// speed of the vibes 🎚️ 0 = no vibes, dont set it to 0 😔
-        /// default is 1.8 because at 1.0 the good bits went past too fast to read.
+        /// default is 2.0, on top of per-line length pacing. tuned by running it
+        /// and asking a human 'still too fast?' until they stopped saying yes 📏
         /// we did NOT fix the timings. we multiplied all of them. by one number.
         /// globally. this is the correct amount of engineering for this problem 🧮
         /// </summary>
-        public static double Speed = 1.8;
+        public static double Speed = 2.0;
 
         /// <summary>--fast skips the drama. why would you do that 💔</summary>
         public static bool Fast = false;
+
+        /// <summary>
+        /// --step 🪜 pause at every act and every cheat until the human presses
+        /// enter. added because someone said "i cant read it all" and the honest
+        /// answer was "correct, its 18,000 words, thats an hour" 📖
+        /// </summary>
+        public static bool Step = false;
 
         private static void Nap(int ms)
         {
             if (Fast || Speed <= 0) { return; }
             Thread.Sleep((int)(ms * Speed));
+        }
+
+        /// <summary>
+        /// like Nap but it accounts for how much text is actually on the line 📏
+        /// a 200 character line and the word "ok" used to get the exact same
+        /// delay. for eleven versions. nobody noticed because nobody could read
+        /// the 200 character one 🫠
+        /// </summary>
+        private static void NapFor(int baseMs, string text)
+        {
+            if (Fast || Speed <= 0) { return; }
+            int len = text == null ? 0 : text.Length;
+            if (len > 220) { len = 220; }   // clamp, some lines are ASCII art
+            Thread.Sleep((int)((baseMs + len) * Speed));
+        }
+
+        /// <summary>
+        /// a beat between sections 🎬 in --step mode this waits for a human.
+        /// otherwise it just pauses. if stdin isnt a terminal we skip the wait,
+        /// because blocking forever on a pipe is a bad look for a cheat 🚿
+        /// </summary>
+        public static void Beat(string prompt)
+        {
+            if (Fast) { return; }
+
+            if (Step && !Console.IsInputRedirected)
+            {
+                Console.Write(Grey + Dim + "      " + prompt + " [enter] " + Reset);
+                try { Console.ReadLine(); }
+                catch (Exception) { /* 🫥 */ }
+                return;
+            }
+
+            Nap(700);
         }
 
         private static string Vibe()
@@ -79,7 +121,7 @@ namespace BeyondBeyond.Core
         public static void Raw(string text)
         {
             Console.WriteLine(text);
-            Nap(26);
+            NapFor(12, text);
         }
 
         public static void Blank() { Console.WriteLine(); }
@@ -87,50 +129,50 @@ namespace BeyondBeyond.Core
         public static void Info(string text)
         {
             Console.WriteLine(Cyan + "[info]" + Reset + " " + text);
-            Nap(60);
+            NapFor(55, text);
         }
 
         public static void Ok(string text)
         {
             Console.WriteLine(Green + "[ ok ] ✅" + Reset + " " + text);
-            Nap(60);
+            NapFor(55, text);
         }
 
         public static void Warn(string text)
         {
             Console.WriteLine(Yellow + "[uhh] ⚠️ " + Reset + " " + text);
-            Nap(110);
+            NapFor(90, text);
         }
 
         public static void Error(string text)
         {
             Console.WriteLine(Red + "[BAD] 💀" + Reset + " " + text);
-            Nap(150);
+            NapFor(120, text);
         }
 
         public static void Fatal(string text)
         {
             Console.WriteLine(Red + Bold + "[!!!!] 🚨🚨🚨 " + text + " 🚨🚨🚨" + Reset);
-            Nap(200);
+            NapFor(170, text);
         }
 
         public static void Debug(string text)
         {
             Console.WriteLine(Grey + "[dbg] " + text + Reset);
-            Nap(35);
+            NapFor(35, text);
         }
 
         public static void Quiet(string text)
         {
             Console.WriteLine(Grey + Dim + text + Reset);
-            Nap(45);
+            NapFor(40, text);
         }
 
         /// <summary>for when it is NOT that deep but we act like it is</summary>
         public static void Banner(string text)
         {
             Console.WriteLine(Magenta + Bold + text + Reset);
-            Nap(110);
+            NapFor(90, text);
         }
 
         /// <summary>SCREAMING. use liberally 📢</summary>
@@ -162,7 +204,7 @@ namespace BeyondBeyond.Core
             }
             sb.Append(Reset);
             Console.WriteLine(sb.ToString());
-            Nap(120);
+            NapFor(90, text);
         }
 
         /// <summary>sPoNgEbOb CaSe. peak comedy. no notes 🧽</summary>
@@ -174,7 +216,7 @@ namespace BeyondBeyond.Core
                 sb.Append(i % 2 == 0 ? char.ToLowerInvariant(text[i]) : char.ToUpperInvariant(text[i]));
             }
             Console.WriteLine(Yellow + sb.ToString() + Reset + " 🤡");
-            Nap(120);
+            NapFor(100, text);
         }
 
         /// <summary>corrupted text for when things are going REALLY well 🫠</summary>
@@ -196,14 +238,14 @@ namespace BeyondBeyond.Core
                 sb.Append(Rng.Next(100) < 22 ? junk[Rng.Next(junk.Length)] : text[i]);
             }
             Console.WriteLine(Magenta + Bold + sb.ToString() + Reset);
-            Nap(90);
+            NapFor(80, text);
         }
 
         /// <summary>random emoji prefix, zero thought, maximum vibe ✨</summary>
         public static void Sparkle(string text)
         {
             Console.WriteLine(Vibe() + " " + White + text + Reset + " " + Vibe());
-            Nap(80);
+            NapFor(70, text);
         }
 
         /// <summary>types it out slow so it feels IMPORTANT ⌨️</summary>
