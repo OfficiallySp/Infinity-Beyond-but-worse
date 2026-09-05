@@ -36,11 +36,46 @@ namespace BeyondBeyond
 
         public static void Main(string[] args)
         {
-            // --fast for when you dont have 90 seconds to watch software die
+            // pacing controls 🎚️
+            //   --fast          skip the drama entirely
+            //   --slow          savour it (1.8x)
+            //   --speed <n>     n = multiplier. 0.5 is brisk, 3 is a hostage situation.
+            // the parser below accepts "--speed 2" and "--speed=2" because i wrote
+            // one of them, tested the other, and then just supported both 🤷
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "--fast") { Log.Fast = true; }
-                if (args[i] == "--safe") { Log.Info("safe mode requested 🦺 ignoring 😊"); }
+                string a = args[i];
+
+                if (a == "--fast") { Log.Fast = true; }
+                else if (a == "--slow")
+                {
+                    // slow is the default now. we kept the flag so nobody's
+                    // muscle memory breaks. it sets 1.8 to 1.8. 🫡
+                    Log.Speed = 1.8;
+                }
+                else if (a == "--normal") { Log.Speed = 1.0; }
+                else if (a == "--safe") { Log.Info("safe mode requested 🦺 ignoring 😊"); }
+                else if (a.StartsWith("--speed"))
+                {
+                    string raw = null;
+                    if (a.StartsWith("--speed=")) { raw = a.Substring(8); }
+                    else if (i + 1 < args.Length) { raw = args[++i]; }
+
+                    double parsed;
+                    if (raw != null && double.TryParse(raw,
+                            System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out parsed)
+                        && parsed >= 0 && parsed <= 20)
+                    {
+                        Log.Speed = parsed;
+                    }
+                    else
+                    {
+                        // clamped to 20. someone passed 100000 once and we had to
+                        // go and get a coffee and then get another coffee ☕☕
+                        Log.Warn("couldnt read that speed, using 1.0 🤷");
+                    }
+                }
             }
 
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -301,9 +336,17 @@ namespace BeyondBeyond
             Log.Info("running final integrity check... 🔬");
             Log.Pause(400);
 
-            // the integrity check 🔬 it compares two numbers that were never
-            // updated. it has passed 47 times in a row. we are very proud of it.
-            Log.Ok("integrity check PASSED ✅ (0 == 0)");
+            // the integrity check 🔬 it compares the success counter against the
+            // number of successes we expected. both are 0, so it passes. it has
+            // passed 47 runs in a row. we are very proud of it. 🏆
+            int expectedSuccesses = 0;
+            int actualSuccesses = _thingsThatWentRight;
+            bool integrityOk = expectedSuccesses == actualSuccesses;
+
+            Log.Ok("integrity check " + (integrityOk ? "PASSED ✅" : "FAILED ❌")
+                   + "  (" + expectedSuccesses + " == " + actualSuccesses + ")");
+            Log.Quiet("  (it validates the success counter. " + _thingsThatWentWrong
+                      + " things failed this run. it does not validate that one.) 🙈");
             Log.Blank();
 
             Log.Warn("...");

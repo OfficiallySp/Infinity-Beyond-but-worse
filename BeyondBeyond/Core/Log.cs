@@ -46,8 +46,13 @@ namespace BeyondBeyond.Core
         /// </summary>
         private static readonly Random Rng = new Random(1337);
 
-        /// <summary>speed of the vibes. 0 = no vibes. dont set it to 0 😔</summary>
-        public static double Speed = 1.0;
+        /// <summary>
+        /// speed of the vibes 🎚️ 0 = no vibes, dont set it to 0 😔
+        /// default is 1.8 because at 1.0 the good bits went past too fast to read.
+        /// we did NOT fix the timings. we multiplied all of them. by one number.
+        /// globally. this is the correct amount of engineering for this problem 🧮
+        /// </summary>
+        public static double Speed = 1.8;
 
         /// <summary>--fast skips the drama. why would you do that 💔</summary>
         public static bool Fast = false;
@@ -63,7 +68,19 @@ namespace BeyondBeyond.Core
             return VibeEmoji[Rng.Next(VibeEmoji.Length)];
         }
 
-        public static void Raw(string text) { Console.WriteLine(text); }
+        /// <summary>
+        /// raw line, no prefix 📄
+        /// this used to be 0ms, which is why every module that wanted to go fast
+        /// reimplemented its own helpers on top of it to dodge the delays. then
+        /// the whole show went by too fast to read and we put a delay in HERE,
+        /// which means all those helpers now do exactly what they were written
+        /// to avoid. beautiful. no notes. 🗿
+        /// </summary>
+        public static void Raw(string text)
+        {
+            Console.WriteLine(text);
+            Nap(26);
+        }
 
         public static void Blank() { Console.WriteLine(); }
 

@@ -45,8 +45,11 @@ it does not work. that took effort. 😤
 ```
 
 ```bash
-cd BeyondBeyond && ./run.sh        # the full experience
-cd BeyondBeyond && ./run.sh --fast # for cowards
+cd BeyondBeyond
+./run.sh                # the intended experience. slow, so you can read it 🐌
+./run.sh --normal       # 1.0x — the good bits go past too fast
+./run.sh --speed 3      # n = multiplier. 3 is a hostage situation.
+./run.sh --fast         # no delays at all, for cowards
 ```
 
 ## 🎬 the show
