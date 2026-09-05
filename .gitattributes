@@ -1,0 +1,8 @@
+# line endings 📏
+# run.bat MUST keep CRLF. cmd.exe will run a LF batch file right up until it
+# hits a label or a multi-line block and then behave in ways nobody enjoys.
+* text=auto
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=lf
+*.sh   text eol=lf

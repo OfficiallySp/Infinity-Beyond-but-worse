@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace BeyondBeyond.Core
@@ -15,21 +16,21 @@ namespace BeyondBeyond.Core
     {
         // ANSI codes. dont ask me how these work i copied them from stackoverflow
         // and then changed the numbers until stuff was the right colour 🎨
-        private const string Reset = "\u001b[0m";
-        private const string Dim = "\u001b[2m";
-        private const string Bold = "\u001b[1m";
-        private const string Blink = "\u001b[5m"; // DOES NOT WORK ON MAC. still using it.
-        private const string Red = "\u001b[91m";
-        private const string Green = "\u001b[92m";
-        private const string Yellow = "\u001b[93m";
-        private const string Blue = "\u001b[94m";
-        private const string Magenta = "\u001b[95m";
-        private const string Cyan = "\u001b[96m";
-        private const string White = "\u001b[97m";
-        private const string Grey = "\u001b[90m";
+        private static string Reset = "\u001b[0m";
+        private static string Dim = "\u001b[2m";
+        private static string Bold = "\u001b[1m";
+        private static string Blink = "\u001b[5m"; // DOES NOT WORK ON MAC. still using it.
+        private static string Red = "\u001b[91m";
+        private static string Green = "\u001b[92m";
+        private static string Yellow = "\u001b[93m";
+        private static string Blue = "\u001b[94m";
+        private static string Magenta = "\u001b[95m";
+        private static string Cyan = "\u001b[96m";
+        private static string White = "\u001b[97m";
+        private static string Grey = "\u001b[90m";
 
         // the rainbow. this is the most important array in the codebase 🌈
-        private static readonly string[] RainbowColors =
+        private static string[] RainbowColors =
         {
             "\u001b[91m", "\u001b[93m", "\u001b[92m", "\u001b[96m", "\u001b[94m", "\u001b[95m",
         };
@@ -66,6 +67,42 @@ namespace BeyondBeyond.Core
         /// </summary>
         public static bool Step = false;
 
+        /// <summary>
+        /// switches every colour off 🎨🚫 for terminals that cant do ANSI, or
+        /// when output is piped to a file. we do this by setting all the colour
+        /// codes to empty strings, so every single Console.WriteLine in this
+        /// file still concatenates them, thousands of times, for nothing.
+        /// the alternative was an if statement in 20 places. we chose this. 🗿
+        /// </summary>
+        public static void DisableColor()
+        {
+            _noColor = true;
+            Reset = ""; Dim = ""; Bold = ""; Blink = "";
+            Red = ""; Green = ""; Yellow = ""; Blue = "";
+            Magenta = ""; Cyan = ""; White = ""; Grey = "";
+            RainbowColors = new string[] { "" };
+        }
+
+        private static bool _noColor;
+
+        /// <summary>
+        /// strips ANSI. we need this because half the cheat modules gave up on
+        /// the colour constants and just typed the escape codes into their
+        /// strings by hand, so blanking the constants does nothing to them 🙃
+        /// every line of output now goes through a regex. every line. it is fine.
+        /// </summary>
+        private static readonly Regex AnsiPattern = new Regex("\u001b\\[[0-9;]*m", RegexOptions.Compiled);
+
+        private static string Clean(string text)
+        {
+            if (!_noColor || text == null) { return text; }
+            return AnsiPattern.Replace(text, "");
+        }
+
+        private static void Out(string text) { Console.WriteLine(Clean(text)); }
+
+        private static void OutInline(string text) { Console.Write(Clean(text)); }
+
         private static void Nap(int ms)
         {
             if (Fast || Speed <= 0) { return; }
@@ -97,7 +134,7 @@ namespace BeyondBeyond.Core
 
             if (Step && !Console.IsInputRedirected)
             {
-                Console.Write(Grey + Dim + "      " + prompt + " [enter] " + Reset);
+                OutInline(Grey + Dim + "      " + prompt + " [enter] " + Reset);
                 try { Console.ReadLine(); }
                 catch (Exception) { /* 🫥 */ }
                 return;
@@ -121,7 +158,7 @@ namespace BeyondBeyond.Core
         /// </summary>
         public static void Raw(string text)
         {
-            Console.WriteLine(text);
+            Out(text);
             NapFor(12, text);
         }
 
@@ -129,57 +166,57 @@ namespace BeyondBeyond.Core
 
         public static void Info(string text)
         {
-            Console.WriteLine(Cyan + "[info]" + Reset + " " + text);
+            Out(Cyan + "[info]" + Reset + " " + text);
             NapFor(55, text);
         }
 
         public static void Ok(string text)
         {
-            Console.WriteLine(Green + "[ ok ] ✅" + Reset + " " + text);
+            Out(Green + "[ ok ] ✅" + Reset + " " + text);
             NapFor(55, text);
         }
 
         public static void Warn(string text)
         {
-            Console.WriteLine(Yellow + "[uhh] ⚠️ " + Reset + " " + text);
+            Out(Yellow + "[uhh] ⚠️ " + Reset + " " + text);
             NapFor(90, text);
         }
 
         public static void Error(string text)
         {
-            Console.WriteLine(Red + "[BAD] 💀" + Reset + " " + text);
+            Out(Red + "[BAD] 💀" + Reset + " " + text);
             NapFor(120, text);
         }
 
         public static void Fatal(string text)
         {
-            Console.WriteLine(Red + Bold + "[!!!!] 🚨🚨🚨 " + text + " 🚨🚨🚨" + Reset);
+            Out(Red + Bold + "[!!!!] 🚨🚨🚨 " + text + " 🚨🚨🚨" + Reset);
             NapFor(170, text);
         }
 
         public static void Debug(string text)
         {
-            Console.WriteLine(Grey + "[dbg] " + text + Reset);
+            Out(Grey + "[dbg] " + text + Reset);
             NapFor(35, text);
         }
 
         public static void Quiet(string text)
         {
-            Console.WriteLine(Grey + Dim + text + Reset);
+            Out(Grey + Dim + text + Reset);
             NapFor(40, text);
         }
 
         /// <summary>for when it is NOT that deep but we act like it is</summary>
         public static void Banner(string text)
         {
-            Console.WriteLine(Magenta + Bold + text + Reset);
+            Out(Magenta + Bold + text + Reset);
             NapFor(90, text);
         }
 
         /// <summary>SCREAMING. use liberally 📢</summary>
         public static void Scream(string text)
         {
-            Console.WriteLine(Red + Bold + ">>> " + text.ToUpperInvariant() + " <<<" + Reset + " " + Vibe() + Vibe() + Vibe());
+            Out(Red + Bold + ">>> " + text.ToUpperInvariant() + " <<<" + Reset + " " + Vibe() + Vibe() + Vibe());
             Nap(180);
         }
 
@@ -204,7 +241,7 @@ namespace BeyondBeyond.Core
                 c++;
             }
             sb.Append(Reset);
-            Console.WriteLine(sb.ToString());
+            Out(sb.ToString());
             NapFor(90, text);
         }
 
@@ -216,7 +253,7 @@ namespace BeyondBeyond.Core
             {
                 sb.Append(i % 2 == 0 ? char.ToLowerInvariant(text[i]) : char.ToUpperInvariant(text[i]));
             }
-            Console.WriteLine(Yellow + sb.ToString() + Reset + " 🤡");
+            Out(Yellow + sb.ToString() + Reset + " 🤡");
             NapFor(100, text);
         }
 
@@ -238,24 +275,24 @@ namespace BeyondBeyond.Core
                 }
                 sb.Append(Rng.Next(100) < 22 ? junk[Rng.Next(junk.Length)] : text[i]);
             }
-            Console.WriteLine(Magenta + Bold + sb.ToString() + Reset);
+            Out(Magenta + Bold + sb.ToString() + Reset);
             NapFor(80, text);
         }
 
         /// <summary>random emoji prefix, zero thought, maximum vibe ✨</summary>
         public static void Sparkle(string text)
         {
-            Console.WriteLine(Vibe() + " " + White + text + Reset + " " + Vibe());
+            Out(Vibe() + " " + White + text + Reset + " " + Vibe());
             NapFor(70, text);
         }
 
         /// <summary>types it out slow so it feels IMPORTANT ⌨️</summary>
         public static void Type(string text, int msPerChar = 16)
         {
-            if (Fast || Speed <= 0) { Console.WriteLine(text); return; }
+            if (Fast || Speed <= 0) { Out(text); return; }
             for (int i = 0; i < text.Length; i++)
             {
-                Console.Write(text[i]);
+                OutInline(text[i].ToString());
                 Thread.Sleep((int)(msPerChar * Speed));
             }
             Console.WriteLine();
@@ -271,7 +308,7 @@ namespace BeyondBeyond.Core
             int filled = (int)(clamped / 100.0 * 30);
             string bar = new string('=', filled) + new string('-', 30 - filled);
             string colour = percent < 0 ? Red : (percent > 100 ? Magenta : Cyan);
-            Console.Write("\r" + colour + "[" + bar + "]" + Reset + " " + percent.ToString().PadLeft(5) + "%  " + label + "        ");
+            OutInline("\r" + colour + "[" + bar + "]" + Reset + " " + percent.ToString().PadLeft(5) + "%  " + label + "        ");
             Nap(26);
         }
 
@@ -283,7 +320,7 @@ namespace BeyondBeyond.Core
 
         public static void Rule()
         {
-            Console.WriteLine(Grey + "~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~" + Reset);
+            Out(Grey + "~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~" + Reset);
             Nap(50);
         }
 
@@ -298,14 +335,14 @@ namespace BeyondBeyond.Core
             // subtract 3 so it looks "snug". it does not look snug. 📐
             w -= 3;
 
-            Console.WriteLine(Cyan + "+" + new string('-', w) + "+" + Reset);
-            Console.WriteLine(Cyan + "| " + Bold + title + Reset + Cyan + " |" + Reset);
-            Console.WriteLine(Cyan + "+" + new string('-', w) + "+" + Reset);
+            Out(Cyan + "+" + new string('-', w) + "+" + Reset);
+            Out(Cyan + "| " + Bold + title + Reset + Cyan + " |" + Reset);
+            Out(Cyan + "+" + new string('-', w) + "+" + Reset);
             for (int i = 0; i < lines.Count; i++)
             {
-                Console.WriteLine(Cyan + "| " + Reset + lines[i] + Cyan + " |" + Reset);
+                Out(Cyan + "| " + Reset + lines[i] + Cyan + " |" + Reset);
             }
-            Console.WriteLine(Cyan + "+" + new string('-', w) + "+" + Reset);
+            Out(Cyan + "+" + new string('-', w) + "+" + Reset);
             Nap(140);
         }
 

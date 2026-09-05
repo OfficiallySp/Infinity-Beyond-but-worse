@@ -44,13 +44,30 @@ it does not work. that took effort. 😤
  |____/|_____| |_| \____/|_| \_|____/
 ```
 
+runs on **windows, mac and linux** 🪟🍎🐧 — all you need is the
+[.NET 10 SDK](https://dotnet.microsoft.com/download).
+
 ```bash
+# mac / linux
 cd BeyondBeyond
-./run.sh --step         # RECOMMENDED 🪜 pauses at every act + every cheat
-./run.sh                # straight through, slow (1.9x), ~7.5 min
-./run.sh --speed 4      # n = multiplier. 4 is a hostage situation.
-./run.sh --fast         # no delays at all, for cowards
+./run.sh --step
+
+# windows (cmd)
+cd BeyondBeyond
+run.bat --step
+
+# anywhere (powershell)
+cd BeyondBeyond
+./run.ps1 --step
 ```
+
+| flag | what it does |
+|---|---|
+| `--step` | **RECOMMENDED** 🪜 pauses at every act + every cheat, press enter |
+| *(none)* | straight through, slow (1.9x), ~7.5 min |
+| `--speed 4` | n = multiplier. 4 is a hostage situation. |
+| `--fast` | no delays at all, for cowards |
+| `--no-color` | if your terminal shows escape codes instead of colour |
 
 it is about **18,000 words**. thats an hour of real reading. `--step` is not a
 gimmick, it is the only way anyone has finished it 📖

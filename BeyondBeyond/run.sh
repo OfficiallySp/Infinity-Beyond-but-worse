@@ -8,6 +8,7 @@
 #   ./run.sh --normal        1.0x. too fast to read. we tried it. thats why
 #                            --step exists.
 #   ./run.sh --fast          no delays at all, for cowards
+#   ./run.sh --no-color      if your terminal shows escape codes instead of colour
 #
 # it is ~18,000 words. thats an hour of real reading. --step is not a gimmick,
 # it is the only way anyone has finished it 📖

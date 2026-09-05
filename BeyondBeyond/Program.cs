@@ -36,6 +36,8 @@ namespace BeyondBeyond
 
         public static void Main(string[] args)
         {
+            bool noColour = false;
+
             // pacing controls 🎚️
             //   --fast          skip the drama entirely
             //   --slow          savour it (1.8x)
@@ -55,6 +57,7 @@ namespace BeyondBeyond
                 }
                 else if (a == "--normal") { Log.Speed = 1.0; }
                 else if (a == "--step" || a == "--pause") { Log.Step = true; }
+                else if (a == "--no-color" || a == "--no-colour") { noColour = true; }
                 else if (a == "--safe") { Log.Info("safe mode requested 🦺 ignoring 😊"); }
                 else if (a.StartsWith("--speed"))
                 {
@@ -79,7 +82,16 @@ namespace BeyondBeyond
                 }
             }
 
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            // terminal setup 🖥️ windows needs ANSI switched on and its console
+            // codepage dragged into this century. mac/linux need neither.
+            TerminalSetup.TryEnableUtf8();
+            bool colourOk = TerminalSetup.TryEnableAnsi();
+
+            if (!colourOk || noColour || Console.IsOutputRedirected)
+            {
+                // no colour rather than literal escape codes everywhere 🎨🚫
+                Log.DisableColor();
+            }
 
             try
             {
