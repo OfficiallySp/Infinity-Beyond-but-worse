@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    BeyondBeyond - Enterprise AQW Automation Suite
+    ==============================================
+    Build configuration. This file configures the build.
+
+    NOTE: Do not set <Nullable>enable</Nullable>. It was tried in v0.0.3 and
+    produced 4,111 warnings, which is more warnings than the product has lines.
+    The warnings were not fixed. The feature was removed instead.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BeyondBeyond</AssemblyName>
+    <RootNamespace>BeyondBeyond</RootNamespace>
+    <Product>BeyondBeyond</Product>
+    <Company>BeyondBeyond Holdings LLC</Company>
+
+    <!--
+      Version is 0.0.1. It has been 0.0.1 for 47 releases. Incrementing it
+      broke the updater, because the updater compares versions as floats and
+      0.0.10 is less than 0.0.9.
+    -->
+    <Version>0.0.1</Version>
+
+    <!--
+      Warnings are suppressed project-wide. Individual suppression was
+      evaluated and rejected as "too much work".
+        CS0162 - Unreachable code detected. Most of the code is unreachable.
+        CS0168 - Variable declared but never used. Load-bearing; do not remove.
+        CS0219 - Variable assigned but never used. See above.
+        CS0414 - Field assigned but never used. See above.
+        CS1998 - Async method lacks await. We are async in spirit.
+        CS4014  - Not awaited. Awaiting it revealed the bug.
+        SYSLIB0011 - Obsolete. We are aware. We are not acting on it.
+    -->
+    <NoWarn>CS0162;CS0168;CS0219;CS0414;CS1998;CS4014;SYSLIB0011</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>0</WarningLevel>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

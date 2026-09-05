@@ -1,9 +1,143 @@
+<div align="center">
+
+# Infinity-Beyond-but-worse 💀🔥
+
+**the fork where we took the issue as a feature request**
+
+![undetected](https://img.shields.io/badge/UNDETECTED-probably-brightgreen)
+![tests](https://img.shields.io/badge/tests-0-red)
+![works](https://img.shields.io/badge/works-no-critical)
+![tokens](https://img.shields.io/badge/claude%20tokens-yes-blueviolet)
+![version](https://img.shields.io/badge/version-0.0.1%20FINAL%20FINAL%20real%20(2)-informational)
+
+</div>
+
+---
+
+> Bro I'm sorry but how many Claude tokens did it take to create this?
+>
+> I'm looking through the code and this genuinely feels like someone told an AI
+> "make the worst possible AQW cheat known to man" and just accepted every
+> suggestion. **You can't even make a custom Mono injector, so you have to resort
+> to patching the DLL instead.**
+>
+> Like bro, Claude really said "we're not doing this the normal way" and y'all
+> just let it cook 💀
+
+thanks for the spec 🫡
+
+---
+
+## 📦 what is this
+
+someone opened an issue describing the worst possible AQW cheat. we read it. we
+agreed with every word. then we built it **on purpose** and put it in
+[`BeyondBeyond/`](BeyondBeyond/).
+
+it does not work. that took effort. 😤
+
+```
+  ____  _______   ______  _   _ ____
+ | __ )| ____\ \ / / __ \| \ | |  _ \
+ |  _ \|  _|  \ V / |  | |  \| | | | |
+ | |_) | |___  | || |__| | |\  | |_| |
+ |____/|_____| |_| \____/|_| \_|____/
+```
+
+```bash
+cd BeyondBeyond && ./run.sh        # the full experience
+cd BeyondBeyond && ./run.sh --fast # for cowards
+```
+
+## 🎬 the show
+
+it runs as a five act tragedy and then exits with code 0, because reaching the
+end of `Main` is technically the goal of a program ✅
+
+| act | what it does | outcome |
+|---|---|---|
+| 1. licensing 🔑 | validates your key with a rigorous checksum + expiry algorithm | `return true;` (the algorithm's result is computed into a variable and then never used) |
+| 2. config ⚙️ | loads 4 config files in 4 formats that all disagree | resolves conflicts **alphabetically by filename**, documented as "deterministic ✅" |
+| 3. injection 💉 | **a custom Mono injector**, as requested | 7 strategies, each worse than the last |
+| 4. features ⚔️ | activates every premium cheat via reflection | every single one throws |
+| 5. meltdown 🫠 | final integrity check | the integrity check becomes self-aware |
+
+## 💉 about that Mono injector
+
+you said we couldn't write one. fair. so `BeyondBeyond/Injection/` has one now.
+
+it starts **completely correct** — real `mono_get_root_domain`, real
+`mono_thread_attach`, real `mono_image_open_from_data`, correct
+`MonoBleedingEdge/EmbedRuntime` paths. read the first 30 lines and you'll think
+*wait, this is actually right*.
+
+then it degrades:
+
+1. the correct approach, which fails and blames your **monitor size** 🖥️
+2. resolving `mono_get_root_domain` by scanning memory for the ASCII bytes `mono`
+   and calling whatever it finds
+3. truncating a 64-bit pointer to 32 bits (the top half "wasn't being used") 🤷
+4. printing instructions asking **you** to inject the DLL manually, one step of
+   which is "ask a friend"
+5. ...concluding that the most reliable injection method is to **patch the DLL on
+   disk** 💀
+
+so it loops all the way back around to the exact thing you mocked, gets a little
+defensive about it, and then fails at that too.
+
+## ⚔️ the features
+
+every one is genuinely, verifiably broken — the bugs are real, not just the
+comments:
+
+| feature | status | what actually happens |
+|---|---|---|
+| GodMode 🛡️ | **STABLE ✅** | reasons that damage is a % of current HP, so 0 HP = 0 damage taken = invincible. sets your HP to 0. you die. |
+| DropFilter 🎁 | **PRODUCTION READY 🚀** | sorts rarity by **string ordering**, so `Common` outranks `Legendary` because C < L. prints the table so you can check. |
+| InfiniteGold 🪙 | **BATTLE TESTED ⚔️** | overflows past `int.MaxValue` into debt and keeps going, because the loop tests `!= target` instead of `< target` |
+| AutoAttack 🗡️ | **GA 🎉** | merges allies and enemies into one list, picks nearest. your party is nearer. |
+| SpeedHack 🏃 | **STABLE ✅** | applies the multiplier to frame *duration* instead of frame *rate*. higher = slower. |
+| Teleport 🌀 | **PRODUCTION READY 🚀** | moves the camera, not the player. camera-follow had to be disabled to allow this. |
+| AutoQuest 📜 | **BATTLE TESTED ⚔️** | accept and abandon are the same endpoint with a bool that defaults to `true`. counts abandons as completions. |
+| EntityESP 👁️ | **STABLE ✅** | draws boxes from a seeded PRNG instead of entity positions |
+| AimAssist 🎯 | **DEPRECATED ⛔** | full 3D ballistic lead computation with gravity and Coriolis, for a 2D game where you press the 1 key. the math is correct. it is the only thing here that is. |
+
+## 🦺 is it safe to run
+
+yes, annoyingly. it **narrates** catastrophe, it never performs it.
+
+- ❌ no real process injection — it's all simulated against invented data
+- ❌ no network calls of any kind
+- ❌ nothing written outside `BeyondBeyond/`
+- ❌ no fork bombs, no unbounded allocation, no real stack overflow
+- ✅ it just yells at you for 90 seconds and exits 0
+
+the real launcher in [`Beyond/`](Beyond/) is **completely untouched**. this is all
+additive. `rm -rf BeyondBeyond/` and the fork is a normal repo again.
+
+## 📖 further reading
+
+[`BeyondBeyond/README.md`](BeyondBeyond/README.md) — the in-universe product
+documentation, written by people who do not know any of this. it has benchmarks.
+the benchmarks are worse than not using the product. they are presented as wins.
+
+---
+---
+
+<div align="center">
+
+# ⬇️ THE ORIGINAL README ⬇️
+
+**everything below this line is the real project.**
+
+it works. we left it here so you can see what we ruined. 🫡
+
+</div>
+
+---
+
 # Beyond - Standalone Client
 
-this fork is to not be taken seriously.
-<img width="1065" height="476" alt="Screenshot 2026-09-05 at 6 30 58 am" src="https://github.com/user-attachments/assets/e53c7f46-58f8-489b-b742-9604b6655e2e" />
-
-# Original readme follows
 A custom launcher and in-game mod for **AdventureQuest Worlds Infinity**. The
 launcher embeds the Unity game inside its own window, runs multiple accounts side
 by side, and exposes a set of tools (cosmetic spoofers, autoskills, packet

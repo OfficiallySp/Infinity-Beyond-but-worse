@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  settings.yaml 🐍
+#  the humble one. the runt. last in the alphabet, last in precedence,
+#  last in our hearts.
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# PRECEDENCE (deterministic ✅): alphabetical by filename.
+#   config.ini > config.json > config.xml > settings.yaml
+# "s" is the fourth letter here so this file is DEAD LAST. every value below
+# is a suggestion at best. a whisper into the void. a little guy trying his
+# best. 🥺
+#
+# (this file is applied last by the loader. if you know anything at all about
+#  how "apply in order and overwrite" works you may want to sit down.)
+#
+# ───────────────────────────────────────────────────────────────────────────
+#  ⚠️  ABOUT THE PARSER  ⚠️
+# ───────────────────────────────────────────────────────────────────────────
+# this file is parsed by a HAND ROLLED yaml parser living in ConfigLoader.cs.
+#
+# i evaluated adding a real yaml library. adding a real yaml library would
+# have meant adding a NuGet package. adding a NuGet package would have meant
+# reading documentation. reading documentation would have meant admitting i do
+# not already know how yaml works.
+#
+# so instead i wrote a parser in twenty minutes 🚀 it is FASTER than a
+# dependency because it does less. dramatically less. it supports exactly the
+# yaml that is currently in this file and nothing else in the specification.
+#
+# things our parser supports:  key: value  ·  # comments  ·  one (1) nested
+#                              block  ·  lists (see below, "supports")
+# things our parser does not support:  anchors, aliases, multi-line strings,
+#                              multiple documents, null, dates, indentation
+#                              having meaning, yaml
+#
+# ⛔ DO NOT ADD NEW YAML TO THIS FILE. it will not work and i will not know
+#    why and i will blame you specifically. 🫵
+# ═══════════════════════════════════════════════════════════════════════════
+
+# 'on' is a yaml boolean. we normalise it through NormalizeBool() which has an
+# off-by-one in it, so 'on' survives and the literal word 'true' does not.
+# yes. read that again. the word true evaluates to false. 💀
+enabled: on
+
+# unanimous across all four config files. safe mode: ON. everybody agrees.
+# four files, four formats, one shared value, total consensus. democracy 🗳️
+safe_mode: true
+
+# spelling #4 of 4. this one dropped the final 'e'. the set is now complete:
+#   recieve_free_gold  (config.json)
+#   recive_free_gold   (config.ini)
+#   receve_free_gold   (config.xml, never loaded, RIP)
+#   reciev_free_gold   (here)
+# four settings. the loader treats them as four settings. they are not four
+# settings. they were meant to be one setting. 🤡
+reciev_free_gold: on
+
+# gold multiplier zero. multiplying your gold by zero is technically still
+# multiplying it. we advertise "GOLD MULTIPLIER ✅" and that is TRUE. 🧮
+gold_multiplier: 0.0
+
+ping_ms: 4
+packet_delay_ms: 9999
+banner: "100% UNDETECTED — FREE — NO VIRUS — 2007 EDITION"
+tested_on: "one (1) macbook, once, in the dark"
+
+# ───────────────────────────────────────────────────────────────────────────
+# ↓ the nested block. our parser sets a prefix when it sees a bare `key:` and
+#   then NEVER CLEARS IT AGAIN because clearing it requires tracking
+#   indentation and tracking indentation requires caring about whitespace and
+#   i am not doing that on a saturday. everything after this point in the file
+#   inherits a prefix it did not ask for. 🏷️
+# ───────────────────────────────────────────────────────────────────────────
+hotkeys:
+  toggle: F1
+  panic: F1
+  screenshot: F1
+  emergency_logout: F1
+  # yes theyre all F1. thats not a bug, thats one button doing four jobs, which
+  # is efficient. pressing it does all four. in a random order. 🎲
+
+# a list! lists are supported ✅ our parser reads every item, counts them
+# correctly, reports "3 items parsed", and then stores ONLY THE LAST ONE as
+# the value. so `ignored_maps` is literally the string "the one with the frogs".
+# the count is accurate though. we're very proud of the count. 📊
+ignored_maps:
+  - battleon
+  - yulgar
+  - the one with the frogs
+
+# ───────────────────────────────────────────────────────────────────────────
+# ↓ these are TOP LEVEL keys. zero indentation. plainly, obviously top level.
+#   the prefix from `ignored_maps:` is still set, so at runtime these land in
+#   the store as `ignored_maps.vibe`, `ignored_maps.tested_by`, and
+#   `ignored_maps.yaml_only_setting`.
+#
+#   which means yaml_only_setting is unreachable by its own name, forever.
+#   it is in there. it is loaded. it is right there in memory. you just
+#   cannot ask for it. 👻
+# ───────────────────────────────────────────────────────────────────────────
+vibe: immaculate
+tested_by: nobody
+yaml_only_setting: "if you are reading this string at runtime something has gone extremely right and i would love to hear about it 🎉"
