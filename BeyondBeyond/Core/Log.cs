@@ -48,12 +48,13 @@ namespace BeyondBeyond.Core
 
         /// <summary>
         /// speed of the vibes 🎚️ 0 = no vibes, dont set it to 0 😔
-        /// default is 2.0, on top of per-line length pacing. tuned by running it
-        /// and asking a human 'still too fast?' until they stopped saying yes 📏
+        /// default is 1.9, on top of per-line length pacing. 1.8 was too fast,
+        /// 2.0 was too slow, so it is 1.9 now. this was determined by a human
+        /// watching it three times and going "hm". rigorous 📏
         /// we did NOT fix the timings. we multiplied all of them. by one number.
         /// globally. this is the correct amount of engineering for this problem 🧮
         /// </summary>
-        public static double Speed = 2.0;
+        public static double Speed = 1.9;
 
         /// <summary>--fast skips the drama. why would you do that 💔</summary>
         public static bool Fast = false;

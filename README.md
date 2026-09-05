@@ -47,7 +47,7 @@ it does not work. that took effort. 😤
 ```bash
 cd BeyondBeyond
 ./run.sh --step         # RECOMMENDED 🪜 pauses at every act + every cheat
-./run.sh                # straight through, slow (2.0x), ~8 min
+./run.sh                # straight through, slow (1.9x), ~7.5 min
 ./run.sh --speed 4      # n = multiplier. 4 is a hostage situation.
 ./run.sh --fast         # no delays at all, for cowards
 ```

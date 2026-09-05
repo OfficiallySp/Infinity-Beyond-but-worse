@@ -3,7 +3,7 @@
 #
 #   ./run.sh --step          RECOMMENDED 🪜 pauses at every act and every cheat
 #                            so you can actually read it. press enter to advance.
-#   ./run.sh                 straight through, slow (2.0x). ~8 min.
+#   ./run.sh                 straight through, slow (1.9x). ~7.5 min.
 #   ./run.sh --speed 4       n = multiplier. 4 is a hostage situation.
 #   ./run.sh --normal        1.0x. too fast to read. we tried it. thats why
 #                            --step exists.
