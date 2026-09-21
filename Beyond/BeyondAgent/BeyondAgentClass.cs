@@ -35,9 +35,15 @@ namespace BeyondAgent
         private static int defaultAccessLevel = 0;
         private static string defaultPlayerName = "";
         private static string nameSpoofInput = "";
+        private static string titleSpoofInput = "";
         // Local name spoof is always active: a non-empty spoofedName means the
         // nameplate/HUD/chat patches substitute it; blank means no spoof.
         public static string spoofedName = "";
+        // Local title spoof: substituted into the nameplate's own title slot
+        // (NameplateView.titleText) in place of Player.Title; blank means the
+        // real title. Never sent — RequestSavePlayerTitle takes the title the
+        // character panel picked, not Player.Title.
+        public static string spoofedTitle = "";
         private static int defaultTargetFrameRate = -2;
 
         // "Fun" window — home for visual/local spoofers (name, gear, future).
@@ -2615,6 +2621,7 @@ namespace BeyondAgent
                             Entity.mainPlayer.AccessLevel = defaultAccessLevel;
                             Entity.mainPlayer.updateNameColor();
                             ClearNameSpoof();
+                            ApplyTitleSpoof("");
                             BeyondLog.Msg($"Reset player defaults: Name={defaultPlayerName}, UpgradeDays={defaultUpgradeDays}, AccessLevel={defaultAccessLevel}");
                         }
                         else
@@ -2655,30 +2662,37 @@ namespace BeyondAgent
 
             float curY = 35f;
 
-            // 1. Name Spoof — local-only nameplate/HUD/chat substitution.
+            // 1. Name + title spoof — local-only nameplate/HUD/chat substitution.
             GUI.Label(new Rect(pad, curY, innerW, 20), "Name Spoof:", labelStyle);
             curY += 20f;
             nameSpoofInput = GUI.TextField(new Rect(pad, curY, innerW, 30), nameSpoofInput, textFieldStyle);
             curY += 35f;
+            GUI.Label(new Rect(pad, curY, innerW, 20), "Title Spoof:", labelStyle);
+            curY += 20f;
+            titleSpoofInput = GUI.TextField(new Rect(pad, curY, innerW, 30), titleSpoofInput, textFieldStyle);
+            curY += 35f;
 
             const float btnW = (innerW - 10) / 2f;
+            bool spoofActive = !string.IsNullOrEmpty(spoofedName) || !string.IsNullOrEmpty(spoofedTitle);
             if (playerExists)
             {
-                if (GUI.Button(new Rect(pad, curY, btnW, 30), !string.IsNullOrEmpty(spoofedName) ? "Update Name" : "Apply Name", closeButtonStyle))
+                if (GUI.Button(new Rect(pad, curY, btnW, 30), spoofActive ? "Update" : "Apply", closeButtonStyle))
                 {
                     ApplyNameSpoof(nameSpoofInput);
+                    ApplyTitleSpoof(titleSpoofInput);
                 }
 
-                if (GUI.Button(new Rect(pad + btnW + 10, curY, btnW, 30), "Clear Name", closeButtonStyle))
+                if (GUI.Button(new Rect(pad + btnW + 10, curY, btnW, 30), "Clear", closeButtonStyle))
                 {
                     ClearNameSpoof();
+                    ApplyTitleSpoof("");
                 }
             }
             else
             {
                 GUI.enabled = false;
-                GUI.Button(new Rect(pad, curY, btnW, 30), "Apply Name", closeButtonStyle);
-                GUI.Button(new Rect(pad + btnW + 10, curY, btnW, 30), "Clear Name", closeButtonStyle);
+                GUI.Button(new Rect(pad, curY, btnW, 30), "Apply", closeButtonStyle);
+                GUI.Button(new Rect(pad + btnW + 10, curY, btnW, 30), "Clear", closeButtonStyle);
                 GUI.enabled = true;
             }
             curY += 40f;
@@ -3435,6 +3449,24 @@ namespace BeyondAgent
 
             try { Entity.mainPlayer?.RefreshNameplate(); } catch { }
             BeyondLog.Msg("Cleared local nameplate spoof.");
+        }
+
+        private static void ApplyTitleSpoof(string desiredTitle)
+        {
+            desiredTitle = (desiredTitle ?? "").Trim();
+            if (desiredTitle.Length > 24)
+            {
+                desiredTitle = desiredTitle[..24];
+            }
+
+            spoofedTitle = desiredTitle;
+            titleSpoofInput = desiredTitle;
+            // No mainPlayer guard: the launcher can set this before login and
+            // createNameplate picks it up when the player spawns.
+            try { Entity.mainPlayer?.RefreshNameplate(); } catch { }
+            BeyondLog.Msg(desiredTitle.Length == 0
+                ? "Cleared local title spoof."
+                : $"Set local title spoof to '{desiredTitle}'.");
         }
 
         private void DrawShopLoaderWindow(int windowID)
@@ -4946,6 +4978,9 @@ namespace BeyondAgent
                                 spoofedName = (string)val;
                                 ApplyNameSpoof(spoofedName);
                                 break;
+                            case "spoofedTitle":
+                                ApplyTitleSpoof((string)val);
+                                break;
                             case "helmSpoofActive": helmSpoofActive = (bool)val; break;
                             case "helmSpoofBundle": helmSpoofBundle = (string)val; break;
                             case "armorSpoofActive": armorSpoofActive = (bool)val; break;
@@ -5315,7 +5350,9 @@ namespace BeyondAgent
                                 Entity.mainPlayer.UpgradeDays = defaultUpgradeDays;
                                 Entity.mainPlayer.updateNameColor();
                                 spoofedName = "";
+                                spoofedTitle = "";
                                 nameSpoofInput = defaultPlayerName ?? "";
+                                titleSpoofInput = "";
                                 Entity.mainPlayer.RefreshNameplate();
                                 BeyondLog.Msg($"[Launcher] Reset player defaults: Name={defaultPlayerName}, UpgradeDays={defaultUpgradeDays}, AccessLevel={defaultAccessLevel}");
                             }
