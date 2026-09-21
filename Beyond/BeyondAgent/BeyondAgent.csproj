@@ -127,6 +127,10 @@
       <HintPath>$(AqwiManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(AqwiManagedDir)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(AqwiManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
