@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>BeyondAgent</AssemblyName>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -125,6 +125,10 @@
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(AqwiManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(AqwiManagedDir)\Unity.InputSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
